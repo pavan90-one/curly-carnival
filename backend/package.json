@@ -1,0 +1,13 @@
+{
+  "name": "smart-commerce-backend",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start:gateway": "npm --prefix api-gateway start",
+    "start:user": "npm --prefix services/user-service start",
+    "start:product": "npm --prefix services/product-service start",
+    "start:order": "npm --prefix services/order-service start",
+    "start:payment": "npm --prefix services/payment-service start",
+    "start:notification": "npm --prefix services/notification-service start"
+  }
+}
