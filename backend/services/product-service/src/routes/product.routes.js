@@ -5,6 +5,8 @@ router.get('/', products.list.bind(products));
 router.post('/seed', products.seed.bind(products));
 router.post('/seed/:count', products.seed.bind(products));
 router.get('/seed10', products.seed.bind(products));
+router.post('/reduce-stock', products.reduceStock.bind(products));
+router.post('/restore-stock', products.restoreStock.bind(products));
 router.get('/:id', products.getById.bind(products));
 router.post('/', products.create.bind(products));
 router.put('/:id', products.update.bind(products));
