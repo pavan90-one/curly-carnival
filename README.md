@@ -10,6 +10,24 @@ Browser -> Frontend (React/Nginx) -> API Gateway -> Auth | User | Product | Orde
 
 The frontend communicates only with the API gateway. The gateway routes requests under `/api/<service>` to the appropriate service.
 
+## Service source layout
+
+Every service now follows the same source layout as the user service:
+
+```text
+src/
+  app.js             # Express application and middleware
+  index.js           # service startup only
+  config/            # port and environment configuration
+  controllers/       # HTTP request/response handling
+  routes/            # endpoint declarations
+  repositories/      # persistence or in-memory data access
+  models/            # domain object factories
+  schema/            # request validation rules
+```
+
+The product, order, payment, and notification repositories remain in memory; their data is intentionally reset when the service restarts. The user service continues to use MongoDB.
+
 ## Start all services
 
 Prerequisite: Docker Desktop is running.
