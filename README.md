@@ -43,6 +43,8 @@ docker compose down         # stop the stack
 
 The gateway is exposed at port `8081` because host port `8080` was already in use. It still uses port `8080` internally in Docker.
 
+The user service persists profiles in the included MongoDB container. For direct local runs, copy `backend/services/user-service/.env.example` to `.env` and set `DATABASE_URL` (or the compatible `MONGO_URI`) to a valid MongoDB connection string.
+
 ## Authentication API
 
 Base URL: `http://localhost:8081/api/auth`

@@ -1,5 +1,6 @@
 const express = require('express');
-const app = express(); app.use(express.json());
+const app = express();
+const PORT = process.env.PORT || 4001;
 const cors = require('cors');
 const joi = require('joi');
 app.use(cors());
@@ -12,6 +13,10 @@ connectDB().then(() => {
     console.error('Database connection error:', error);
     process.exit(1);
 });
+
+app.use('/user', userRoutes);
+// alias plural route to support clients using /users
+app.use('/users', userRoutes);
 app.get('/', (req, res) => {
   res.send('User services is running');
 });
@@ -23,5 +28,6 @@ app.use((err, req, res, next) => {
     });
 })
 
-
-app.listen(process.env.PORT || 4001, () => console.log('user-service ready'));
+app.listen(PORT, () => {
+  console.log(`User services is listening on port ${PORT}`);
+});
