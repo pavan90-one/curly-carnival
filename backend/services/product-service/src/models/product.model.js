@@ -1,4 +1,4 @@
-function createProduct(input) {
-  return { id: `prd_${Date.now()}`, ...input };
-}
-module.exports = { createProduct };
+const productSchema = require('../schema/product.schema');
+const mongoose = require('mongoose');
+const Product = mongoose.model('Product', productSchema);
+module.exports = Product;

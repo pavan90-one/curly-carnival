@@ -18,7 +18,16 @@ app.use(cors());
 app.use(morgan('tiny'));
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'api-gateway' }));
 for (const [route, target] of Object.entries(services)) {
-  // Express removes the mounted `/api/<route>` prefix before proxying, so add it back for each service.
-  app.use(`/api/${route}`, createProxyMiddleware({ target, changeOrigin: true, pathRewrite: path => `/${route}${path}` }));
+  app.use(`/api/${route}`, createProxyMiddleware({
+    target: `${target}/${route}`,
+    changeOrigin: true,
+    on: {
+      error: (err, _req, res) => {
+        if (!res.headersSent) {
+          res.status(503).json({ error: `Service '${route}' is currently unavailable at ${target}. Please ensure the service is running.` });
+        }
+      }
+    }
+  }));
 }
 app.listen(port, () => console.log(`API gateway listening on ${port}`));
