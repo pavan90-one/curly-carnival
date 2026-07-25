@@ -1,42 +1,132 @@
 # Smart Commerce
 
-A microservice commerce starter with a React storefront, API gateway, five backend services, Docker Compose, and Kubernetes manifests.
+Smart Commerce is a containerized microservice starter for an online store. It includes a React storefront, an API gateway, and independent auth, user, product, order, payment, and notification services.
 
-## Run locally
+## Architecture
 
-```bash
-cd backend
-docker compose up --build
+```text
+Browser -> Frontend (React/Nginx) -> API Gateway -> Auth | User | Product | Order | Payment | Notification services
 ```
 
-Open `http://localhost:5173`. The gateway is at `http://localhost:8081` and its health endpoint is `/health`.
+The frontend communicates only with the API gateway. The gateway routes requests under `/api/<service>` to the appropriate service.
 
-To run without Docker, install dependencies in each service and in `frontend`, then start the services on ports 4001–4005, the gateway on 8080, and the frontend with `npm run dev`.
+## Start all services
 
-## API routes
+Prerequisite: Docker Desktop is running.
 
-| Route | Service |
-| --- | --- |
-| `/api/users` | User profiles |
-| `/api/auth` | Registration and authentication |
-| `/api/products` | Catalog and inventory |
-| `/api/orders` | Order creation and history |
-| `/api/payments` | Payment intents |
-| `/api/notifications` | Notification events |
+```powershell
+cd D:\july24\curly-carnival\backend
+docker compose up --build -d
+```
 
-All services expose `/health`. Data is intentionally in memory for this starter and resets when containers restart.
+Commands for daily use:
 
-## Authentication endpoints
+```powershell
+docker compose ps           # running containers and ports
+docker compose logs -f      # follow all logs
+docker compose up --build -d # rebuild after source changes
+docker compose down         # stop the stack
+```
 
-All auth routes are available through the gateway at `/api/auth`:
+## Services and URLs
 
-| Method | Route | Body |
-| --- | --- | --- |
-| POST | `/api/auth/register` | `name`, `email`, `password` |
-| POST | `/api/auth/login` | `email`, `password` |
-| POST | `/api/auth/refresh-token` | `refreshToken` |
-| POST | `/api/auth/logout` | `refreshToken` |
-| POST | `/api/auth/forgot-password` | `email` |
-| POST | `/api/auth/reset-password` | `token`, `password` |
+| Service | Purpose | Direct health URL | Gateway route |
+| --- | --- | --- | --- |
+| Frontend | React shopping experience | http://localhost:5173 | — |
+| API gateway | CORS, logging, request routing | http://localhost:8081/health | http://localhost:8081/api |
+| Auth | Registration, login, JWT, password reset | http://localhost:4006/health | `/api/auth` |
+| User | User profiles | http://localhost:4001/health | `/api/users` |
+| Product | Catalog and inventory | http://localhost:4002/health | `/api/products` |
+| Order | Order creation and history | http://localhost:4003/health | `/api/orders` |
+| Payment | Payment simulation | http://localhost:4004/health | `/api/payments` |
+| Notification | Notification queue simulation | http://localhost:4005/health | `/api/notifications` |
 
-For Kubernetes, create `auth-secrets.yaml` from `kubernetes/auth-secrets.example.yaml` with strong, distinct secrets before deploying.
+The gateway is exposed at port `8081` because host port `8080` was already in use. It still uses port `8080` internally in Docker.
+
+## Authentication API
+
+Base URL: `http://localhost:8081/api/auth`
+
+| Method | Route | Required body | Description |
+| --- | --- | --- | --- |
+| POST | `/register` | `name`, `email`, `password` | Creates a user and returns a token pair. |
+| POST | `/login` | `email`, `password` | Returns the user and a token pair. |
+| POST | `/refresh-token` | `refreshToken` | Rotates refresh token and returns new tokens. |
+| POST | `/logout` | `refreshToken` | Invalidates the refresh token. |
+| POST | `/forgot-password` | `email` | Starts a password reset request. |
+| POST | `/reset-password` | `token`, `password` | Changes password and revokes refresh tokens. |
+
+Example registration:
+
+```powershell
+$body = @{ name = 'Jane Doe'; email = 'jane@example.com'; password = 'a-secure-password' } | ConvertTo-Json
+Invoke-RestMethod -Method Post -Uri http://localhost:8081/api/auth/register -ContentType 'application/json' -Body $body
+```
+
+Security behavior:
+
+- Passwords are hashed with `bcryptjs`; plaintext passwords are not stored.
+- Access JWTs expire after 15 minutes.
+- Refresh JWTs expire after 7 days and are rotated on refresh.
+- Reset tokens expire after 15 minutes.
+- Configure strong `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` values before production.
+
+## Commerce API
+
+| Service | Method | Gateway endpoint | Details |
+| --- | --- | --- | --- |
+| Products | GET | `/api/products` | Optional query: `q` |
+| Products | GET | `/api/products/:id` | Find one product |
+| Products | POST | `/api/products` | Create a product |
+| Users | GET | `/api/users` | List users |
+| Users | GET | `/api/users/:id` | Find one user |
+| Users | POST | `/api/users` | Create user profile |
+| Orders | GET | `/api/orders` | Optional query: `userId` |
+| Orders | POST | `/api/orders` | Requires `userId` and `items[]` |
+| Payments | GET/POST | `/api/payments` | POST requires `orderId`, `amount` |
+| Notifications | GET/POST | `/api/notifications` | Create or list notifications |
+
+Order body example:
+
+```json
+{
+  "userId": "usr_demo",
+  "items": [
+    { "id": "prd_aurora", "name": "Aurora Headphones", "price": 129.99, "quantity": 1 }
+  ]
+}
+```
+
+Send it to `POST http://localhost:8081/api/orders`.
+
+## Run without Docker
+
+Start each service in its own terminal after `npm install`. Ports are auth `4006`, user `4001`, product `4002`, order `4003`, payment `4004`, notification `4005`, gateway `8080`, and frontend `5173`.
+
+```powershell
+cd backend\services\auth-service; npm install; npm start
+cd backend\api-gateway; npm install; npm start
+cd frontend; npm install; npm run dev
+```
+
+Repeat the first command pattern for every other service directory. When running the frontend outside Docker, set `VITE_API_URL=http://localhost:8080/api` so it reaches the local gateway.
+
+## Kubernetes
+
+Manifests are in [backend/kubernetes](backend/kubernetes). Build and publish images using the tags in the manifests, then apply them:
+
+```powershell
+kubectl apply -f backend/kubernetes/namespace.yaml
+kubectl apply -f backend/kubernetes/auth-secrets.yaml
+kubectl apply -f backend/kubernetes/services.yaml
+kubectl apply -f backend/kubernetes/gateway-and-frontend.yaml
+```
+
+Copy `backend/kubernetes/auth-secrets.example.yaml` to `auth-secrets.yaml`, replace both placeholder values with long unique secrets, and do not commit that real-secret file.
+
+## Important development limitations
+
+- Data, token allowlists, orders, and notifications are in memory and disappear when containers restart.
+- Payment always simulates a successful transaction; it has no payment-provider integration.
+- Notifications are queued in memory and do not send email, SMS, or push messages.
+- Before production, add persistent databases, migrations, request validation, automated tests, rate limiting, HTTPS, centralized logs, traces, and a real secret manager.
