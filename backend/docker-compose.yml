@@ -28,12 +28,32 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
   order-service:
     build: ./services/order-service
     ports: ["4003:4003"]
+    environment:
+      DATABASE_URL: mongodb://mongodb:27017/smart-commerce-orders
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      PRODUCT_SERVICE_URL: http://product-service:4002
+      PAYMENT_SERVICE_URL: http://payment-service:4004
+      USER_SERVICE_URL: http://user-service:4001
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
   payment-service:
     build: ./services/payment-service
     ports: ["4004:4004"]
+    environment:
+      DATABASE_URL: mongodb://mongodb:27017/smart-commerce-payments
+    depends_on:
+      mongodb:
+        condition: service_healthy
   notification-service:
     build: ./services/notification-service
     ports: ["4005:4005"]

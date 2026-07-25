@@ -25,6 +25,14 @@ class ProductService {
         return await this.repository.delete(id);
     }
 
+    async reduceStock(items) {
+        return await this.repository.reduceStock(items);
+    }
+
+    async restoreStock(items) {
+        return await this.repository.restoreStock(items);
+    }
+
     async seed(count = 10) {
         const sampleProducts = [
             {

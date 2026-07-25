@@ -1,5 +1,56 @@
 const repository = require('../repositories/order.repository');
-const { validateOrder } = require('../schema/order.schema');
-function list(req, res) { res.json(repository.findAll(req.query.userId)); }
-function create(req, res) { const error = validateOrder(req.body); return error ? res.status(400).json({ error }) : res.status(201).json(repository.create(req.body)); }
-module.exports = { list, create };
+const { addOrderJob } = require('../queue/order.queue');
+
+class orderController{
+    constructor(repository){
+        this.repository = repository;
+    }
+    async createOrder(req,res,next){
+        try {   
+            const createdOrder = await this.repository.createOrder(req.body);
+            await addOrderJob({
+                orderId: createdOrder._id.toString(),
+                userId: createdOrder.userId ? createdOrder.userId.toString() : null,
+                items: createdOrder.items,
+                totalAmount: createdOrder.totalAmount,
+                shippingAddress: createdOrder.shippingAddress
+            });
+            res.status(201).json(createdOrder);
+        } catch (error) {
+            next(error);
+        }
+    }
+    async getAllOrders(req,res,next){
+        try {
+            const orders = await this.repository.getAllOrders();
+            res.status(200).json(orders);
+        } catch (error) {
+            next(error);
+        }
+    }
+    async getOrderById(req,res,next){
+        try {
+            const order = await this.repository.getOrderById(req.params.orderId);
+            res.status(200).json(order);
+        } catch (error) {
+            next(error);
+        }
+    }
+    async updateOrder(req,res,next){
+        try {
+            const updatedOrder = await this.repository.updateOrder(req.params.orderId,req.body);
+            res.status(200).json(updatedOrder);
+        } catch (error) {
+            next(error);
+        }
+    }
+    async deleteOrder(req,res,next){
+        try {
+            const deletedOrder = await this.repository.deleteOrder(req.params.orderId);
+            res.status(200).json(deletedOrder);
+        } catch (error) {
+            next(error);
+        }
+    }
+}
+module.exports = new orderController(new repository()); 
