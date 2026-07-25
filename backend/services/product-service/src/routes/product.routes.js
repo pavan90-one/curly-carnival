@@ -1,6 +1,12 @@
 const router = require('express').Router();
-const controller = require('../controllers/product.controller');
-router.get('/', controller.list);
-router.get('/:id', controller.getById);
-router.post('/', controller.create);
+const productController = require('../controllers/product.controller');
+const products = new productController();
+router.get('/', products.list.bind(products));
+router.post('/seed', products.seed.bind(products));
+router.post('/seed/:count', products.seed.bind(products));
+router.get('/seed10', products.seed.bind(products));
+router.get('/:id', products.getById.bind(products));
+router.post('/', products.create.bind(products));
+router.put('/:id', products.update.bind(products));
+router.delete('/:id', products.delete.bind(products));  
 module.exports = router;
