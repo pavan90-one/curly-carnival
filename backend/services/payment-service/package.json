@@ -1,1 +1,17 @@
-{"name":"payment-service","version":"1.0.0","private":true,"scripts":{"start":"node src/index.js"},"dependencies":{"express":"^4.21.2"}}
+{
+  "name": "payment-service",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

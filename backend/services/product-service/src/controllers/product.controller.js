@@ -59,6 +59,24 @@ class ProductController {
             next(error);
         }
     }
+
+    async reduceStock(req, res, next) {
+        try {
+            const result = await this.productService.reduceStock(req.body.items || []);
+            res.json(result);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
+
+    async restoreStock(req, res, next) {
+        try {
+            const result = await this.productService.restoreStock(req.body.items || []);
+            res.json(result);
+        } catch (error) {
+            res.status(400).json({ error: error.message });
+        }
+    }
 }
 
 module.exports = ProductController;   

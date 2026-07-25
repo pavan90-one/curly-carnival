@@ -1,8 +1,8 @@
 const ordersModel = require("../models/order.model");
 
 class orderRepository{
-   constructor(ordersModel){
-      this.model = ordersModel;
+   constructor(model = ordersModel){
+      this.model = model;
    }
    async createOrder(order){
       try {

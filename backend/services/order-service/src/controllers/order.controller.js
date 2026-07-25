@@ -1,4 +1,6 @@
 const repository = require('../repositories/order.repository');
+const { addOrderJob } = require('../queue/order.queue');
+
 class orderController{
     constructor(repository){
         this.repository = repository;
@@ -6,6 +8,13 @@ class orderController{
     async createOrder(req,res,next){
         try {   
             const createdOrder = await this.repository.createOrder(req.body);
+            await addOrderJob({
+                orderId: createdOrder._id.toString(),
+                userId: createdOrder.userId ? createdOrder.userId.toString() : null,
+                items: createdOrder.items,
+                totalAmount: createdOrder.totalAmount,
+                shippingAddress: createdOrder.shippingAddress
+            });
             res.status(201).json(createdOrder);
         } catch (error) {
             next(error);

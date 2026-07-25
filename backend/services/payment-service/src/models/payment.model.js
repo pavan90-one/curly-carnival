@@ -1,2 +1,5 @@
-function createPayment({ orderId, amount, currency = 'USD' }) { return { id: `pay_${Date.now()}`, orderId, amount, currency, status: 'succeeded', createdAt: new Date().toISOString() }; }
-module.exports = { createPayment };
+const mongoose = require('mongoose');
+const paymentSchema = require('../schema/payment.schema');
+
+const Payment = mongoose.model('Payment', paymentSchema);
+module.exports = Payment;
