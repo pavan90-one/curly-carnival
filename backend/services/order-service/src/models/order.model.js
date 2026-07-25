@@ -1,2 +1,4 @@
-function createOrder({ userId, items }) { const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0); return { id: `ord_${Date.now()}`, userId, items, total: Number(total.toFixed(2)), status: 'pending', createdAt: new Date().toISOString() }; }
-module.exports = { createOrder };
+const mongoose = require("mongoose");
+const orderSchema = require("../schema/order.schema");
+const Orders = new mongoose.model("Order",orderSchema);
+module.exports = Orders;
