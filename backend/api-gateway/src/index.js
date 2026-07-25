@@ -6,6 +6,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 const port = process.env.PORT || 8080;
 const services = {
+  auth: process.env.AUTH_SERVICE_URL || 'http://localhost:4006',
   users: process.env.USER_SERVICE_URL || 'http://localhost:4001',
   products: process.env.PRODUCT_SERVICE_URL || 'http://localhost:4002',
   orders: process.env.ORDER_SERVICE_URL || 'http://localhost:4003',

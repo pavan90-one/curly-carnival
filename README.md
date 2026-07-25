@@ -18,9 +18,25 @@ To run without Docker, install dependencies in each service and in `frontend`, t
 | Route | Service |
 | --- | --- |
 | `/api/users` | User profiles |
+| `/api/auth` | Registration and authentication |
 | `/api/products` | Catalog and inventory |
 | `/api/orders` | Order creation and history |
 | `/api/payments` | Payment intents |
 | `/api/notifications` | Notification events |
 
 All services expose `/health`. Data is intentionally in memory for this starter and resets when containers restart.
+
+## Authentication endpoints
+
+All auth routes are available through the gateway at `/api/auth`:
+
+| Method | Route | Body |
+| --- | --- | --- |
+| POST | `/api/auth/register` | `name`, `email`, `password` |
+| POST | `/api/auth/login` | `email`, `password` |
+| POST | `/api/auth/refresh-token` | `refreshToken` |
+| POST | `/api/auth/logout` | `refreshToken` |
+| POST | `/api/auth/forgot-password` | `email` |
+| POST | `/api/auth/reset-password` | `token`, `password` |
+
+For Kubernetes, create `auth-secrets.yaml` from `kubernetes/auth-secrets.example.yaml` with strong, distinct secrets before deploying.

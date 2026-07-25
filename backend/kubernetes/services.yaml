@@ -1,6 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: auth-service
+  namespace: smart-commerce
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: auth-service } }
+  template:
+    metadata: { labels: { app: auth-service } }
+    spec:
+      containers:
+        - name: auth-service
+          image: smart-commerce/auth-service:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 4006 }]
+          env:
+            - name: ACCESS_TOKEN_SECRET
+              valueFrom: { secretKeyRef: { name: auth-secrets, key: access-token-secret } }
+            - name: REFRESH_TOKEN_SECRET
+              valueFrom: { secretKeyRef: { name: auth-secrets, key: refresh-token-secret } }
+          readinessProbe: { httpGet: { path: /health, port: 4006 }, initialDelaySeconds: 3 }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: auth-service, namespace: smart-commerce }
+spec: { selector: { app: auth-service }, ports: [{ port: 4006, targetPort: 4006 }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: user-service
   namespace: smart-commerce
 spec:

@@ -13,6 +13,7 @@ spec:
           imagePullPolicy: IfNotPresent
           ports: [{ containerPort: 8080 }]
           env:
+            - { name: AUTH_SERVICE_URL, value: http://auth-service:4006 }
             - { name: USER_SERVICE_URL, value: http://user-service:4001 }
             - { name: PRODUCT_SERVICE_URL, value: http://product-service:4002 }
             - { name: ORDER_SERVICE_URL, value: http://order-service:4003 }
