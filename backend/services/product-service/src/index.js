@@ -1,4 +1,4 @@
 const app = require('./app');
-const { port } = require('./config/config');
+const config = require("../src/config/config");
 
-app.listen(port, () => console.log(`product-service listening on ${port}`));
+app.listen(config.port, () => console.log(`product-service listening on ${config.port}`));
