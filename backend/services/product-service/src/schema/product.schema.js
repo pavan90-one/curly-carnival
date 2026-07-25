@@ -1,6 +1,17 @@
-function validateProduct(input) {
-  if (!input || !input.name || typeof input.name !== 'string') return 'name is required';
-  if (typeof input.price !== 'number' || input.price < 0) return 'price must be a non-negative number';
-  return null;
-}
-module.exports = { validateProduct };
+const mongoose = require('mongoose');
+
+const productSchema = new mongoose.Schema({
+    name: String,
+    price: Number,
+    stock: Number,
+    description: String,
+    image: String,
+    category: String,
+    rating: Number,
+    numReviews: Number,
+    isFeaturedProduct: Boolean,
+    createdAt: Date,
+    updatedAt: Date
+});
+
+module.exports =  productSchema;
