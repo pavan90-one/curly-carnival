@@ -29,8 +29,8 @@ class PaymentController {
             if (!orderId || !amount) {
                 return res.status(400).json({ error: 'orderId and amount are required' });
             }
-            // Simulate payment processing (success if amount > 0)
-            const isSuccess = Number(amount) > 0;
+            // Simulate payment processing (fails if amount <= 0 or paymentMethod is declined_card)
+            const isSuccess = Number(amount) > 0 && paymentMethod !== 'declined_card' && paymentMethod !== 'failed';
             const payment = await this.repository.createPayment({
                 orderId,
                 amount: Number(amount),
