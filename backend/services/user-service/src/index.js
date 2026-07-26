@@ -6,8 +6,17 @@ app.use(cors());
 app.use(express.json());
 const userRoutes = require('./routes/user.routes');
 const connectDB = require('./config/database');
-connectDB().then(() => {
+const { connect: connectRabbitMQ, consumeQueue, queues } = require('../../../shared/messaging/src/index');
+
+connectDB().then(async () => {
     console.log('Database connected successfully');
+    await connectRabbitMQ().catch(err => console.error("RabbitMQ connection error in user-service:", err.message));
+    
+    // Subscribe user-service to USER_QUEUE messages
+    consumeQueue(queues.USER_QUEUE, async (data) => {
+        console.log('[user-service] Received message on USER_QUEUE:', data);
+    }).catch(err => console.error("Failed to subscribe to USER_QUEUE:", err.message));
+
 }).catch((error) => {
     console.error('Database connection error:', error);
     process.exit(1);
