@@ -1,1 +1,21 @@
-{"name":"notification-service","version":"1.0.0","private":true,"scripts":{"start":"node src/index.js"},"dependencies":{"express":"^4.21.2"}}
+{
+    "name": "notification-service",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "start": "node src/app.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.6",
+        "dotenv": "^17.4.2",
+        "express": "^5.2.1",
+        "express-limiter": "^1.6.1",
+        "joi": "^18.2.3",
+        "jsonwebtoken": "^9.0.3",
+        "mongoose": "^9.7.4",
+        "nodemailer": "^9.0.3"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.14"
+    }
+}
