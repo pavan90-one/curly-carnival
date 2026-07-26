@@ -16,7 +16,7 @@ const services = {
 
 app.use(cors());
 app.use(morgan('tiny'));
-app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'api-gateway' }));
+app.get('/carnival', (_req, res) => res.json({ status: 'ok', service: 'api-gateway' }));
 for (const [route, target] of Object.entries(services)) {
   app.use(`/api/${route}`, createProxyMiddleware({
     target: `${target}/${route}`,
