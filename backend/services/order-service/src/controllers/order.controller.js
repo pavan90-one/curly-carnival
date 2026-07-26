@@ -1,5 +1,6 @@
 const repository = require('../repositories/order.repository');
 const { addOrderJob } = require('../queue/order.queue');
+const { bus, event_list, queues } = require('../../../../shared/messaging/src/index');
 
 class orderController{
     constructor(repository){
@@ -15,6 +16,23 @@ class orderController{
                 totalAmount: createdOrder.totalAmount,
                 shippingAddress: createdOrder.shippingAddress
             });
+
+            // Publish ORDER_CREATED event to RabbitMQ
+            try {
+                const orderPayload = {
+                    event: event_list.ORDER_CREATED,
+                    orderId: createdOrder._id.toString(),
+                    userId: createdOrder.userId ? createdOrder.userId.toString() : null,
+                    items: createdOrder.items,
+                    totalAmount: createdOrder.totalAmount,
+                    timestamp: new Date().toISOString()
+                };
+                await bus.sendToQueue(queues.PAYMENT_QUEUE, orderPayload);
+                await bus.sendToQueue(queues.NOTIFICATION_QUEUE, orderPayload);
+            } catch (mqErr) {
+                console.error('Failed to publish ORDER_CREATED event:', mqErr.message);
+            }
+
             res.status(201).json(createdOrder);
         } catch (error) {
             next(error);

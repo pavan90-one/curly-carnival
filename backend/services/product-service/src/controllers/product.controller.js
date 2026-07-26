@@ -1,4 +1,5 @@
 const defaultProductService = require('../services/product.service');
+const { bus, event_list, queues } = require('../../../../shared/messaging/src/index');
 
 class ProductController {
     constructor(productService = defaultProductService) {
@@ -26,6 +27,17 @@ class ProductController {
     async create(req, res, next) {
         try {
             const product = await this.productService.create(req.body);
+            
+            try {
+                await bus.sendToQueue(queues.PRODUCT_QUEUE, {
+                    event: event_list.PRODUCT_CREATED,
+                    product: product,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (mqErr) {
+                console.error('Failed to publish PRODUCT_CREATED event:', mqErr.message);
+            }
+
             res.status(201).json(product);
         } catch (error) {
             next(error);

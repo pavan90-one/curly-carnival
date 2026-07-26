@@ -4,6 +4,7 @@ const authRepo = require('../repositories/auth.repository');
 const PasswordUtil = require('../utils/password.util');
 const jwtUtil = require('../utils/jwt.util');
 const cookieParser = require('cookie-parser');
+const { bus, event_list, queues } = require('../../../../shared/messaging/src/index');
 const cookieInterval = 1;
 class AuthController {
     async register(req, res, next) {
@@ -15,6 +16,25 @@ class AuthController {
             }
             const hashedPassword = await PasswordUtil.hashPassword(password);
             const newUser = await authRepo.addUser({ email: email, password: hashedPassword });
+
+            // Publish USER_CREATED event to RabbitMQ
+            try {
+                await bus.sendToQueue(queues.NOTIFICATION_QUEUE, {
+                    event: event_list.USER_CREATED,
+                    userId: newUser._id,
+                    email: newUser.email,
+                    timestamp: new Date().toISOString()
+                });
+                await bus.sendToQueue(queues.USER_QUEUE, {
+                    event: event_list.USER_CREATED,
+                    userId: newUser._id,
+                    email: newUser.email,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (mqErr) {
+                console.error('Failed to publish USER_CREATED event:', mqErr.message);
+            }
+
             return res.status(201).json({ message: 'User created successfully' });
         } catch (error) {
             next(error);

@@ -1,4 +1,6 @@
 const UserRepository = require("../repositories/user.repositories");
+const { bus, event_list, queues } = require("../../../../shared/messaging/src/index");
+
 class UserController {  
   constructor() {
     
@@ -7,6 +9,18 @@ class UserController {
     try {
       const userData = req.body;
       const createdUser = await UserRepository.createUser(userData);
+      
+      try {
+        await bus.sendToQueue(queues.NOTIFICATION_QUEUE, {
+          event: event_list.USER_CREATED,
+          userId: createdUser._id,
+          email: createdUser.userEmail || createdUser.email,
+          timestamp: new Date().toISOString()
+        });
+      } catch (mqErr) {
+        console.error('Failed to publish USER_CREATED event:', mqErr.message);
+      }
+
       res.status(201).json(createdUser);
     } catch (error) {
       next(error);
