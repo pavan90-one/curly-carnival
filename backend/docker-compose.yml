@@ -10,29 +10,52 @@ services:
       timeout: 5s
       retries: 10
   auth-service:
-    build: ./services/auth-service
+    build:
+      context: .
+      dockerfile: services/auth-service/Dockerfile
     ports: [ "4006:4006" ]
+    environment:
+      DATABASE_URL: mongodb://mongodb:27017/smart-commerce-auth
+      MONGO_URI: mongodb://mongodb:27017/smart-commerce-auth
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
   user-service:
-    build: ./services/user-service
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
     ports: [ "4001:4001" ]
     environment:
       DATABASE_URL: mongodb://mongodb:27017/smart-commerce-users
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     depends_on:
       mongodb:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
   product-service:
-    build: ./services/product-service
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
     ports: [ "4002:4002" ]
     environment:
       DATABASE_URL: mongodb://mongodb:27017/smart-commerce-products
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     depends_on:
       mongodb:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
   redis:
     image: redis:7-alpine
     ports: [ "6379:6379" ]
   order-service:
-    build: ./services/order-service
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
     ports: [ "4003:4003" ]
     environment:
       DATABASE_URL: mongodb://mongodb:27017/smart-commerce-orders
@@ -41,22 +64,36 @@ services:
       PRODUCT_SERVICE_URL: http://product-service:4002
       PAYMENT_SERVICE_URL: http://payment-service:4004
       USER_SERVICE_URL: http://user-service:4001
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     depends_on:
       mongodb:
         condition: service_healthy
       redis:
         condition: service_started
+      rabbitmq:
+        condition: service_started
   payment-service:
-    build: ./services/payment-service
+    build:
+      context: .
+      dockerfile: services/payment-service/Dockerfile
     ports: [ "4004:4004" ]
     environment:
       DATABASE_URL: mongodb://mongodb:27017/smart-commerce-payments
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     depends_on:
       mongodb:
         condition: service_healthy
+      rabbitmq:
+        condition: service_started
   notification-service:
-    build: ./services/notification-service
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile
     ports: [ "4005:4005" ]
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      - rabbitmq
   api-gateway:
     build: ./api-gateway
     ports: [ "8081:8080" ]
@@ -76,7 +113,6 @@ services:
       - notification-service
   rabbitmq:
     image: rabbitmq:3-management
-
     container_name: rabbitmq
     restart: always
     ports: [ "5672:5672", "15672:15672" ]
