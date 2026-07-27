@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "scripts": {
-        "start": "node src/app.js"
+        "start": "node src/index.js"
     },
     "dependencies": {
         "cors": "^2.8.6",
