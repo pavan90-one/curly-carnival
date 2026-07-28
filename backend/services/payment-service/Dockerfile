@@ -1,6 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
-COPY shared/messaging ./shared/messaging
+COPY shared ./shared
+RUN cd ./shared && npm install --omit=dev
 COPY services/payment-service/package*.json ./services/payment-service/
 WORKDIR /app/services/payment-service
 RUN npm install --omit=dev
