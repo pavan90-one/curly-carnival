@@ -2,9 +2,15 @@ const express = require('express');
 const app = express(); app.use(express.json());
 const cors = require('cors');
 const joi = require('joi');
+const { identityMiddleware } = require('../../../shared/middleware/identity.middleware');
+const { auditMiddleware } = require('../../../shared/middleware/audit.middleware');
 app.use(cors());
 app.use(express.json());
+app.use(identityMiddleware);
+app.use(auditMiddleware('user-service'));
 const userRoutes = require('./routes/user.routes');
+
+
 const connectDB = require('./config/database');
 const User = require('./models/user.model');
 const { createUser } = require('./repositories/user.repositories');

@@ -1,15 +1,16 @@
 const dotenv = require('dotenv');
+const sharedConfig = require('../../../../shared/config/config');
+
 dotenv.config();
+
 const config = {
   port: Number(process.env.PORT) || 4006,
-  accessSecret: process.env.ACCESS_TOKEN_SECRET || 'development-access-secret-change-me',
-  refreshSecret: process.env.REFRESH_TOKEN_SECRET || 'development-refresh-secret-change-me',
-  hashkey: process.env.HASH_KEY || 'development-hash-key-change-me',
-  refreshTokenTime: process.env.REFRESH_TOKEN_TIME || '7d',
-  accessTokenTime: process.env.ACCESS_TOKEN_TIME || '15m',
+  accessSecret: sharedConfig.JWT.ACCESS_TOKEN_SECRET,
+  refreshSecret: sharedConfig.JWT.REFRESH_TOKEN_SECRET,
+  hashkey: sharedConfig.hashkey || sharedConfig.HASH.HASH_KEY,
+  refreshTokenTime: sharedConfig.JWT.REFRESH_TOKEN_TIME,
+  accessTokenTime: sharedConfig.JWT.ACCESS_TOKEN_TIME,
   mongoUri: (process.env.MONGO_URI || process.env.MONGO_DB || "mongodb://127.0.0.1:27017/smart-commerce-auth").replace(/^DATABASE_URL=/, '')
 };
 
-
 module.exports = config;
-
