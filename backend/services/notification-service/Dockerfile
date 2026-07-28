@@ -1,10 +1,24 @@
 FROM node:20-alpine
+
 WORKDIR /app
+
+# Copy shared library
 COPY shared ./shared
-RUN cd ./shared && npm install --omit=dev
-COPY services/notification-service/package*.json ./services/notification-service/
-WORKDIR /app/services/notification-service
+
+# Install shared dependencies
+WORKDIR /app/shared
 RUN npm install --omit=dev
-COPY services/notification-service/src ./src
+
+# Copy notification package.json first
+WORKDIR /app/services/notification-service
+
+COPY services/notification-service/package*.json ./
+
+RUN npm install --omit=dev
+
+# Copy complete notification service
+COPY services/notification-service/ .
+
 EXPOSE 4005
+
 CMD ["npm", "start"]

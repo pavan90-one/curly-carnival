@@ -133,16 +133,29 @@ Repeat the first command pattern for every other service directory. When running
 
 ## Kubernetes
 
-Manifests are in [backend/kubernetes](backend/kubernetes). Build and publish images using the tags in the manifests, then apply them:
+Manifests are organized by component in subdirectories under [backend/kubernetes](backend/kubernetes). Build and publish images using the tags in the manifests, then apply all manifests recursively:
 
 ```powershell
-kubectl apply -f backend/kubernetes/namespace.yaml
-kubectl apply -f backend/kubernetes/auth-secrets.yaml
-kubectl apply -f backend/kubernetes/services.yaml
-kubectl apply -f backend/kubernetes/gateway-and-frontend.yaml
+kubectl apply -R -f backend/kubernetes/
 ```
 
-Copy `backend/kubernetes/auth-secrets.example.yaml` to `auth-secrets.yaml`, replace both placeholder values with long unique secrets, and do not commit that real-secret file.
+Or apply individually by directory:
+
+```powershell
+kubectl apply -f backend/kubernetes/namespace/
+kubectl apply -f backend/kubernetes/mongodb/
+kubectl apply -f backend/kubernetes/rabbitmq/
+kubectl apply -f backend/kubernetes/redis/
+kubectl apply -f backend/kubernetes/auth-service/
+kubectl apply -f backend/kubernetes/user-service/
+kubectl apply -f backend/kubernetes/product-service/
+kubectl apply -f backend/kubernetes/order-service/
+kubectl apply -f backend/kubernetes/payment-service/
+kubectl apply -f backend/kubernetes/notification-service/
+kubectl apply -f backend/kubernetes/api-gateway/
+kubectl apply -f backend/kubernetes/frontend/
+kubectl apply -f backend/kubernetes/ingress/
+```
 
 ## Important development limitations
 
